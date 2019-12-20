@@ -15,4 +15,8 @@ public interface UmsAdminService {
 
 	List<UmsPermission> getPermissionList(Object id);
 
+	String login(String username, String password);
+
+	List<UmsPermission> getPermissionList(Long adminId);
+
 }
