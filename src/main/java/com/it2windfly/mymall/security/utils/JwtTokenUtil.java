@@ -1,4 +1,4 @@
-package com.it2windfly.mymall.security.util;
+package com.it2windfly.mymall.security.utils;
 
 
 import cn.hutool.core.date.DateUtil;

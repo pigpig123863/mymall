@@ -29,7 +29,7 @@ public class Swagger2Config {
                 .apiInfo(apiInfo())
                 .select()
                 //为当前包下controller生成API文档
-                .apis(RequestHandlerSelectors.basePackage("com.macro.mall.tiny.controller"))
+                .apis(RequestHandlerSelectors.basePackage("com.it2windfly.mymall.controller"))
                 //为有@Api注解的Controller生成API文档
 //                .apis(RequestHandlerSelectors.withClassAnnotation(Api.class))
                 //为有@ApiOperation注解的方法生成API文档
@@ -42,7 +42,7 @@ public class Swagger2Config {
         return new ApiInfoBuilder()
                 .title("SwaggerUI演示")
                 .description("mymall")
-                .contact("macro")
+                .contact("it2windfly")
                 .version("1.0")
                 .build();
     }
