@@ -1,10 +1,14 @@
 package com.it2windfly.mymall.service.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
@@ -23,16 +27,28 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import com.github.pagehelper.PageHelper;
 import com.it2windfly.mymall.bo.AdminUserDetails;
+import com.it2windfly.mymall.dao.UmsAdminPermissionRelationDao;
 import com.it2windfly.mymall.dao.UmsAdminRoleRelationDao;
 import com.it2windfly.mymall.dto.UmsAdminParam;
+import com.it2windfly.mymall.dto.UpdateAdminPasswordParam;
 import com.it2windfly.mymall.mbg.mapper.UmsAdminLoginLogMapper;
 import com.it2windfly.mymall.mbg.mapper.UmsAdminMapper;
+import com.it2windfly.mymall.mbg.mapper.UmsAdminPermissionRelationMapper;
+import com.it2windfly.mymall.mbg.mapper.UmsAdminRoleRelationMapper;
 import com.it2windfly.mymall.mbg.model.UmsAdmin;
 import com.it2windfly.mymall.mbg.model.UmsAdminExample;
 import com.it2windfly.mymall.mbg.model.UmsAdminLoginLog;
+import com.it2windfly.mymall.mbg.model.UmsAdminPermissionRelation;
+import com.it2windfly.mymall.mbg.model.UmsAdminPermissionRelationExample;
+import com.it2windfly.mymall.mbg.model.UmsAdminRoleRelation;
+import com.it2windfly.mymall.mbg.model.UmsAdminRoleRelationExample;
 import com.it2windfly.mymall.mbg.model.UmsPermission;
+import com.it2windfly.mymall.mbg.model.UmsRole;
 import com.it2windfly.mymall.security.utils.JwtTokenUtil;
 import com.it2windfly.mymall.service.UmsAdminService;
+
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 
 
 @Service
@@ -41,8 +57,11 @@ public class UmsAdminServiceImpl implements UmsAdminService{
 	@Autowired UmsAdminMapper umsAdminMapper;
 	@Autowired PasswordEncoder passwordEncoder;
 	@Autowired JwtTokenUtil jwtTokenUtil;
-	@Autowired UmsAdminRoleRelationDao adminRoleRelationDao;
+	@Autowired UmsAdminRoleRelationDao umsAdminRoleRelationDao;
 	@Autowired UmsAdminLoginLogMapper umsAdminLoginLogMapper;
+	@Autowired UmsAdminPermissionRelationMapper umsAdminPermissionRelationMapper;
+	@Autowired UmsAdminRoleRelationMapper umsAdminRoleRelationMapper;
+	@Autowired UmsAdminPermissionRelationDao umsAdminPermissionRelationDao;
 
 	@Override
 	public UmsAdmin getAdminByUsername(String username) {
@@ -57,7 +76,7 @@ public class UmsAdminServiceImpl implements UmsAdminService{
 
 	@Override
 	public List<UmsPermission> getPermissionList(Long adminId) {
-		return adminRoleRelationDao.getPermissionList(adminId);
+		return umsAdminRoleRelationDao.getPermissionList(adminId);
 	}
 
 	@Override
@@ -153,5 +172,89 @@ public class UmsAdminServiceImpl implements UmsAdminService{
 	public int delete(Long adminId) {
 		return umsAdminMapper.deleteByPrimaryKey(adminId);
 	}
+
+	@Override
+	public int updateRole(Long adminId, List<Long> roleIds) {
+		int count = roleIds==null?0:roleIds.size();
+		//删除原来的关系
+		UmsAdminRoleRelationExample example = new UmsAdminRoleRelationExample();
+		example.createCriteria().andAdminIdEqualTo(adminId);
+		umsAdminRoleRelationMapper.deleteByExample(example);
+		
+		if(!CollectionUtils.isEmpty(roleIds)){
+			List<UmsAdminRoleRelation> relationList = new ArrayList<>();
+			for(Long roleId:roleIds){
+				UmsAdminRoleRelation relation = new UmsAdminRoleRelation();
+				relation.setAdminId(adminId);
+				relation.setRoleId(roleId);
+				relationList.add(relation);
+			}
+			umsAdminRoleRelationDao.insertList(relationList);
+		}
+		return count;
+		
+	}
+
+	@Override
+	public int updatePassword(UpdateAdminPasswordParam param) {
+		if(StrUtil.isEmpty(param.getUsername()) 
+				|| StrUtil.isEmpty(param.getOldPassword())
+				|| StrUtil.isEmpty(param.getNewPassword())){
+		 return -1;
+		}	
+		UmsAdminExample example = new UmsAdminExample();
+		example.createCriteria().andUsernameEqualTo(param.getUsername());
+		List<UmsAdmin> adminList = umsAdminMapper.selectByExample(example);
+		if(CollUtil.isEmpty(adminList)){
+			return -2;
+		}
+		UmsAdmin admin =adminList.get(0);
+		if(!passwordEncoder.matches(param.getOldPassword(), admin.getPassword())){
+			return -3;
+		}
+		admin.setPassword(passwordEncoder.encode(param.getNewPassword()));
+		umsAdminMapper.updateByPrimaryKey(admin);
+		return 1;
+	}
+
+	@Override
+	public List<UmsRole> getRoleList(Long adminId) {
+		return umsAdminRoleRelationDao.getRoleList(adminId);
+	}
+
+	@Override
+	public int updatePermission(Long adminId, List<Long> perIds) {
+		UmsAdminPermissionRelationExample example = new UmsAdminPermissionRelationExample();
+		example.createCriteria().andAdminIdEqualTo(adminId);
+		umsAdminPermissionRelationMapper.deleteByExample(example);
+		
+		List<UmsPermission> perList = umsAdminRoleRelationDao.getPermissionList(adminId);
+		List<Long> rolePerList = perList.stream().map(UmsPermission::getId).collect(Collectors.toList());
+		
+		if(!CollUtil.isEmpty(perIds)){
+			List<Long> addPermissionList = perIds.stream().filter(perId -> !rolePerList.contains(perId)).collect(Collectors.toList());
+			List<Long> subPermissionList = rolePerList.stream().filter(perId -> !perIds.contains(perId)).collect(Collectors.toList());
+			
+			List<UmsAdminPermissionRelation> relations = new ArrayList<>();
+			relations.addAll(convert(adminId,1,addPermissionList));
+			relations.addAll(convert(adminId,-1,subPermissionList));
+			return umsAdminPermissionRelationDao.insertList(relations);
+		}
+		return 0;
+		}
+
+	/**
+     * 将+-权限关系转化为对象
+     */
+    private List<UmsAdminPermissionRelation> convert(Long adminId,Integer type,List<Long> permissionIdList) {
+        List<UmsAdminPermissionRelation> relationList = permissionIdList.stream().map(permissionId -> {
+            UmsAdminPermissionRelation relation = new UmsAdminPermissionRelation();
+            relation.setAdminId(adminId);
+            relation.setType(type);
+            relation.setPermissionId(permissionId);
+            return relation;
+        }).collect(Collectors.toList());
+        return relationList;
+    }
 	
 }

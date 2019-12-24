@@ -175,8 +175,8 @@ public class UmsAdminExample {
             return (Criteria) this;
         }
 
-        public Criteria andUsernameEqualTo(String value) {
-            addCriterion("username =", value, "username");
+        public Criteria andUsernameEqualTo(CharSequence charSequence) {
+            addCriterion("username =", charSequence, "username");
             return (Criteria) this;
         }
 
