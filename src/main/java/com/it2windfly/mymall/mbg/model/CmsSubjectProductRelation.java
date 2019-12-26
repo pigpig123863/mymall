@@ -1,6 +1,5 @@
 package com.it2windfly.mymall.mbg.model;
 
-import io.swagger.annotations.ApiModelProperty;
 import java.io.Serializable;
 
 public class CmsSubjectProductRelation implements Serializable {
