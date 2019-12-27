@@ -2,6 +2,7 @@ package com.it2windfly.mymall.service.impl;
 
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import javax.management.RuntimeErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.github.pagehelper.PageHelper;
@@ -26,16 +28,17 @@ import com.it2windfly.mymall.service.PmsProductService;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 
+@Service
 public class PmsProductServiceImpl implements PmsProductService{
     private static final Logger LOGGER = LoggerFactory.getLogger(PmsProductServiceImpl.class);
 	@Autowired PmsProductMapper pmsProductMapper;
-	@Autowired MemberPriceDao memberPriceDao;
-	@Autowired ProductLadderDao productLadderDao;
-	@Autowired ProductFullReductionDao productFullReductionDao;
-	@Autowired SkuStockDao skuStockDao;
-	@Autowired ProductAttributeValueDao productAttributeValueDao;
-	@Autowired SubjectProductRelationDao subjectProductRelationDao;
-	@Autowired PrefrenceAreaProductRelationDao prefrenceAreaProductRelationDao;
+	@Autowired PmsMemberPriceDao memberPriceDao;
+	@Autowired PmsProductLadderDao productLadderDao;
+	@Autowired PmsProductFullReductionDao productFullReductionDao;
+	@Autowired PmsSkuStockDao skuStockDao;
+	@Autowired PmsProductAttributeValueDao productAttributeValueDao;
+	@Autowired CmsSubjectProductRelationDao subjectProductRelationDao;
+	@Autowired CmsPrefrenceAreaProductRelationDao prefrenceAreaProductRelationDao;
 	@Autowired PmsProductDao pmsProductDao;
 	@Autowired PmsMemberPriceMapper pmsMemberPriceMapper;
 	@Autowired PmsProductLadderMapper productLadderMapper;
@@ -44,6 +47,7 @@ public class PmsProductServiceImpl implements PmsProductService{
 	@Autowired PmsProductAttributeValueMapper productAttributeValueMapper;
 	@Autowired CmsSubjectProductRelationMapper subjectProductRelationMapper;
 	@Autowired CmsPrefrenceAreaProductRelationMapper prefrenceAreaProductRelationMapper;
+	@Autowired PmsProductVertifyRecordDao pmsProductVertifyRecordDao;
 	
 	@Override
 	public int create(PmsProductParam pmsProductParam) {
@@ -188,8 +192,79 @@ public class PmsProductServiceImpl implements PmsProductService{
         return pmsProductMapper.selectByExample(example);
 	}
 
+	@Override
+	public List<PmsProduct> list(String keyword) {
+		PmsProductExample example = new PmsProductExample();
+		Criteria criteria = example.createCriteria();
+		criteria.andDeleteStatusEqualTo(0);
+		if(StrUtil.isEmpty(keyword)){
+			criteria.andNameLike("%"+keyword+"%");
+		}
+		return pmsProductMapper.selectByExample(example);
+	}
 
-			
+	@Override
+	public int updateVerifyStatus(List<Long> ids, Integer vertifyStatus, String detail) {
+		PmsProduct product = new PmsProduct();
+		product.setVerifyStatus(vertifyStatus);
+		PmsProductExample example = new PmsProductExample();
+		example.createCriteria().andIdIn(ids);
+		int count = pmsProductMapper.updateByExampleSelective(product, example);
 		
+		List<PmsProductVertifyRecord> records = new ArrayList<>();
+		for(Long id:ids){
+			PmsProductVertifyRecord record = new PmsProductVertifyRecord();
+			record.setCreateTime(new Date());
+			record.setDetail(detail);
+			record.setProductId(id);
+			record.setStatus(vertifyStatus);
+			record.setVertifyMan("it2windfly");
+			records.add(record);
+		}
+		pmsProductVertifyRecordDao.insertList(records);
+		return count;
+	}
+
+	@Override
+	public int updatePublishStatus(List<Long> ids, Integer publishStatus) {
+		PmsProduct product = new PmsProduct();
+		product.setPublishStatus(publishStatus);
+		PmsProductExample example = new PmsProductExample();
+		example.createCriteria().andIdIn(ids);
+		int count = pmsProductMapper.updateByExampleSelective(product, example);
+		return count;
+	}
+
+	@Override
+	public int updateRecommendStatus(List<Long> ids, Integer recommendStatus) {
+		PmsProduct product = new PmsProduct();
+		product.setPublishStatus(recommendStatus);
+		PmsProductExample example = new PmsProductExample();
+		example.createCriteria().andIdIn(ids);
+		int count = pmsProductMapper.updateByExampleSelective(product, example);
+		return count;
+	}
+
+	@Override
+	public int updateNewStatus(List<Long> ids, Integer newStatus) {
+		PmsProduct product = new PmsProduct();
+		product.setPublishStatus(newStatus);
+		PmsProductExample example = new PmsProductExample();
+		example.createCriteria().andIdIn(ids);
+		int count = pmsProductMapper.updateByExampleSelective(product, example);
+		return count;
+	}
+
+	@Override
+	public int updateDeleteStatus(List<Long> ids, Integer deleteStatus) {
+		PmsProduct product = new PmsProduct();
+		product.setPublishStatus(deleteStatus);
+		PmsProductExample example = new PmsProductExample();
+		example.createCriteria().andIdIn(ids);
+		int count = pmsProductMapper.updateByExampleSelective(product, example);
+		return count;
+	}
+
+	
 	}
 

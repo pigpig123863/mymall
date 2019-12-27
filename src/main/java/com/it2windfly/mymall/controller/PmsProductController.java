@@ -74,4 +74,84 @@ public class PmsProductController {
 		List<PmsProduct> productList = pmsProductService.list(pmsProductQueryParam,pageNum,pageSize);
 		return CommonResult.success(CommonPage.restPage(productList));
 	}
+	
+	@ApiOperation("根据商品名称或货号模糊查询")
+    @RequestMapping(value = "/simpleList", method = RequestMethod.GET)
+    @ResponseBody
+    public CommonResult<List<PmsProduct>> simpleList(String keyword){
+		List<PmsProduct> productList = pmsProductService.list(keyword);
+		return CommonResult.success(productList);
+	}
+	
+	 @ApiOperation("批量修改审核状态")
+     @RequestMapping(value = "/update/verifyStatus", method = RequestMethod.POST)
+     @ResponseBody
+     @PreAuthorize("hasAuthority('pms:product:update')")
+	 public CommonResult updateVerifyStatus(@RequestParam("ids")List<Long> ids,
+			 								@RequestParam("verifyStatus")Integer vertifyStatus,
+			 								@RequestParam("details")String detail){
+		 int count = pmsProductService.updateVerifyStatus(ids,vertifyStatus,detail);
+		 if(count>0){
+			 return CommonResult.success(count);
+		 }else{
+			 return CommonResult.failed();
+		 }
+			 
+	 }
+	 
+	 @ApiOperation("批量上下架")
+     @RequestMapping(value = "/update/publishStatus", method = RequestMethod.POST)
+     @ResponseBody
+     @PreAuthorize("hasAuthority('pms:product:update')")
+	 public CommonResult updatePublishStatus(@RequestParam("publishStatus")Integer publishStatus,
+			 								 @RequestParam("ids")List<Long> ids){
+		 int count = pmsProductService.updatePublishStatus(ids,publishStatus);
+		 if(count>0){
+			 return CommonResult.success(count);
+		 }else{
+			 return CommonResult.failed();
+		 }
+	 }	
+	 
+	 @ApiOperation("批量推荐商品")
+     @RequestMapping(value = "/update/recommendStatus", method = RequestMethod.POST)
+     @ResponseBody
+     @PreAuthorize("hasAuthority('pms:product:update')")
+	 public CommonResult updateRecommendStatus(@RequestParam("recommendStatus")Integer recommendStatus,
+			 								   @RequestParam("ids")List<Long> ids){
+		 int count = pmsProductService.updateRecommendStatus(ids,recommendStatus);
+		 if(count>0){
+			 return CommonResult.success(count);
+		 }else{
+			 return CommonResult.failed();
+		 }
+	 }
+	 
+
+     @ApiOperation("批量设为新品")
+     @RequestMapping(value = "/update/newStatus", method = RequestMethod.POST)
+     @ResponseBody
+     @PreAuthorize("hasAuthority('pms:product:update')")
+     public CommonResult updateNewStatus(@RequestParam("ids") List<Long> ids,
+                                        @RequestParam("newStatus") Integer newStatus) {
+        int count = pmsProductService.updateNewStatus(ids, newStatus);
+        if (count > 0) {
+            return CommonResult.success(count);
+        } else {
+            return CommonResult.failed();
+        }
+    }
+     @ApiOperation("批量修改删除状态")
+     @RequestMapping(value = "/update/deleteStatus", method = RequestMethod.POST)
+     @ResponseBody
+     @PreAuthorize("hasAuthority('pms:product:delete')")
+     public CommonResult updateDeleteStatus(@RequestParam("ids") List<Long> ids,
+                                            @RequestParam("deleteStatus") Integer deleteStatus) {
+         int count = pmsProductService.updateDeleteStatus(ids, deleteStatus);
+         if (count > 0) {
+             return CommonResult.success(count);
+         } else {
+             return CommonResult.failed();
+         }
+     }
 }

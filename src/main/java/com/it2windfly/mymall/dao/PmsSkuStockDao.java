@@ -1,5 +1,5 @@
 package com.it2windfly.mymall.dao;
 
-public interface SkuStockDao {
+public interface PmsSkuStockDao {
 
 }

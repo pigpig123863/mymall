@@ -17,5 +17,17 @@ public interface PmsProductService {
 
 	List<PmsProduct> list(PmsProductQueryParam pmsProductQueryParam, int pageNum, int pageSize);
 
+	List<PmsProduct> list(String keyword);
+
+	int updateVerifyStatus(List<Long> ids, Integer vertifyStatus, String detail);
+
+	int updatePublishStatus(List<Long> ids, Integer publishStatus);
+
+	int updateRecommendStatus(List<Long> ids, Integer recommendStatus);
+
+	int updateNewStatus(List<Long> ids, Integer newStatus);
+
+	int updateDeleteStatus(List<Long> ids, Integer deleteStatus);
+
 
 }

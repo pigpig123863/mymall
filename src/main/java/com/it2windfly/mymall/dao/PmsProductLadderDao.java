@@ -1,5 +1,5 @@
 package com.it2windfly.mymall.dao;
 
-public interface MemberPriceDao {
+public interface PmsProductLadderDao {
 
 }
