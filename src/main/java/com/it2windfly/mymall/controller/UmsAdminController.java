@@ -25,7 +25,6 @@ import com.it2windfly.mymall.dto.UmsAdminParam;
 import com.it2windfly.mymall.dto.UpdateAdminPasswordParam;
 import com.it2windfly.mymall.mbg.model.UmsAdmin;
 import com.it2windfly.mymall.mbg.model.UmsPermission;
-import com.it2windfly.mymall.mbg.model.UmsPermissionExample;
 import com.it2windfly.mymall.mbg.model.UmsRole;
 import com.it2windfly.mymall.service.UmsAdminService;
 

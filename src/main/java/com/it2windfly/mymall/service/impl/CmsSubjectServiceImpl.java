@@ -9,7 +9,6 @@ import com.github.pagehelper.PageHelper;
 import com.it2windfly.mymall.mbg.mapper.CmsSubjectMapper;
 import com.it2windfly.mymall.mbg.model.CmsSubject;
 import com.it2windfly.mymall.mbg.model.CmsSubjectExample;
-import com.it2windfly.mymall.mbg.model.CmsSubjectExample.Criteria;
 import com.it2windfly.mymall.service.CmsSubjectService;
 
 import cn.hutool.core.util.StrUtil;

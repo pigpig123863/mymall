@@ -3,6 +3,7 @@ package com.it2windfly.mymall.mbg.model;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class SmsHomeNewProductExample {
     protected String orderByClause;
 
@@ -43,8 +44,15 @@ public class SmsHomeNewProductExample {
         oredCriteria.add(criteria);
         return criteria;
     }
-
     public Criteria createCriteria() {
+        Criteria criteria = createCriteriaInternal();
+        if (oredCriteria.size() == 0) {
+            oredCriteria.add(criteria);
+        }
+        return criteria;
+    }
+
+    public Criteria homeNewProductMapper() {
         Criteria criteria = createCriteriaInternal();
         if (oredCriteria.size() == 0) {
             oredCriteria.add(criteria);
